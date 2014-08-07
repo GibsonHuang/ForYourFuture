@@ -1,0 +1,84 @@
+﻿<!DOCTYPE html>
+<style>
+    #button
+    {
+        width:200px;
+        background:#CCC;
+        border:solid 1px #666;
+        height:80px;
+        position:absolute;
+    }
+</style>
+<html xmlns="http://www.w3.org/1999/xhtml">
+clientX:<input type="text" id="text1"/><br>
+clientY:<input type="text" id="text2"/><br>
+BoxX:<input type="text" id="text5"/><br>
+BoxY:<input type="text" id="text6"/><br>
+<input type="button" id ="button" value="MoveMe" /><br>
+
+<script type="text/javascript" lang="javascript">
+
+    var t1 = document.getElementById("text1");
+    var t2 = document.getElementById("text2");
+    var t5 = document.getElementById("text5");
+    var t6 = document.getElementById("text6");
+    var button = document.getElementById("button");
+    var MouseX, MouseY, BoxX, BoxY;
+
+    //console.log(p1);
+    function f() {
+        var event = event || window.event;
+        
+        MouseX = parseInt(event.clientX);
+        MouseY = parseInt(event.clientY);
+        BoxX = parseInt(button.offsetLeft);
+        BoxY = parseInt(button.offsetTop);
+
+        t1.value = MouseX;
+        t2.value = MouseY;
+        t5.value = BoxX;
+        t6.value = BoxY;
+
+        button.onmousemove = move;
+        button.onmouseup = stop;
+
+    }
+
+    function move() {
+
+        var event = event || window.event;
+
+        var MoveX = parseInt(event.clientX) - MouseX;
+        var MoveY = parseInt(event.clientY) - MouseY;
+
+        button.style.left = BoxX + MoveX + "px";
+        button.style.top = BoxY + MoveY + "px";
+
+        t1.value = (event.clientX);
+        t2.value = (event.clientY);
+        t5.value = button.offsetLeft;
+        t6.value = button.offsetTop;
+
+
+    }
+
+    function stop() {
+
+        var event = event || window.event;
+
+        t1.value = (event.clientX);
+        t2.value = (event.clientY);
+        t5.value = button.offsetLeft;
+        t6.value = button.offsetTop;
+
+        button.onmousemove = button.onmouseup = null;
+    }
+
+    button.onmousedown = f;
+
+
+</script>
+
+ </html>
+
+

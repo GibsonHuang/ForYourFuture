@@ -1,0 +1,531 @@
+﻿<!DOCTYPE html>
+<style>
+    #dataAll
+    {
+        position:absolute;
+    }
+</style>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+</head>
+    
+    <script>
+        //Calendar移動處理--------------------------------------------
+       
+        var CalendarMove;
+        var MouseX, MouseY, BoxX, BoxY;
+
+        //console.log(p1);
+        function CalendarMoveHandle() {
+
+            var event = event || window.event;
+
+            MouseX = parseInt(event.clientX);
+            MouseY = parseInt(event.clientY);
+            BoxX = parseInt(CalendarMove.offsetLeft);
+            BoxY = parseInt(CalendarMove.offsetTop);
+
+            CalendarMove.onmousemove = move;
+            CalendarMove.onmouseup = stop;
+
+        }
+
+        function move() {
+
+            var event = event || window.event;
+
+            var MoveX = parseInt(CalendarMove.clientX) - MouseX;
+            var MoveY = parseInt(CalendarMove.clientY) - MouseY;
+
+            $("#dataAll").css("left", BoxX + MoveX);
+            $("#dataAll").css("top", BoxY + MoveY);
+
+            //CalendarMove.style.left = (BoxX + MoveX) + "px";
+            //CalendarMove.style.top = (BoxY + MoveY) + "px";
+        }
+
+        function stop() {
+            var event = event || window.event;
+            CalendarMove.onmousemove = CalendarMove.onmouseup = null;
+        }
+
+        var obj; //存放DB取得的Data
+        var SenserIPStr = ""; //存放SensorIP的Filter
+        var SrcIPStr = ""; //存放SrcIPStr的Filter
+        var DestIPStr = ""; //存放DesrIPStr的Filter
+        var EventNameStr = ""; //存放EventName的Filter
+
+        //輸入SensorIP用
+        function uf_GetSenserIP() {
+
+            var SenserIP = "";
+            SenserIP = prompt("目前已經輸入的SensorIP為:" + SenserIPStr + "\n" + "底下可繼續加入SensorIP");
+ 
+            if (SenserIP == "undefined" || SenserIP == null || SenserIP == "") { return; }
+            else if (SenserIP == "Clear") { SenserIPStr=""; }
+            else if (SenserIP > "" && SenserIPStr > "") {
+                SenserIPStr = SenserIPStr + "||" + SenserIP;
+            }
+            else {
+                SenserIPStr = SenserIP;
+            };
+        }
+
+        //輸入SrcIP用
+        function uf_GetSrcIP() {
+
+            var SrcIP = "";
+            SrcIP = prompt("目前已經輸入的SrcIP為:" + SrcIPStr + "\n" + "底下可繼續加入SrcIP");
+
+            if (SrcIP == "undefined" || SrcIP == null || SrcIP =="") { return; }
+            else if (SrcIP == "Clear") { SrcIPStr = ""; }
+            else if (SrcIP > "" && SrcIPStr > "") {
+                SrcIPStr = SrcIPStr + "||" + SrcIP;
+            }
+            else {
+                SrcIPStr = SrcIP;
+            };
+        }
+
+        //輸入DestIP用
+        function uf_GetDestIP() {
+
+            var DestIP = "";
+            DestIP = prompt("目前已經輸入的DestIP為:" + DestIPStr + "\n" + "底下可繼續加入DestIP");
+
+            if (DestIP == "undefined" || DestIP == null || DestIP == "") { return; }
+            else if (DestIP == "Clear") { DestIPStr = ""; }
+            else if (DestIP > "" && DestIPStr > "") {
+                DestIPStr = DestIPStr + "||" + DestIP;
+            }
+            else {
+                DestIPStr = DestIP;
+            };
+        }
+
+        //輸入EventName用
+        function uf_GetEventName() {
+
+            var EventName = "";
+            EventName = prompt("目前已經輸入的EventName為:" + EventNameStr + "\n" + "底下可繼續加入EventName");
+
+            if (EventName == "undefined" || EventName == null || EventName =="") { return; }
+            else if (EventName == "Clear") { EventNameStr = ""; }
+            else if (EventName > "" && EventNameStr > "") {
+                EventNameStr = EventNameStr + "||" + EventName;
+            }
+            else {
+                EventNameStr = EventName;
+            };
+        }
+
+        //換頁使用--------------------------------------------------------------------------------------------
+        function uf_ChangePage(PageStatus) {
+
+            switch (PageStatus) {
+                case "FirstPage":
+                    document.getElementById('PageNum').value = 1;
+                    break;
+                case "PrePage":
+                    if ((document.getElementById('PageNum').value - 1) < 1) { alert("頁數不得<1"); break;}
+                    document.getElementById('PageNum').value = document.getElementById('PageNum').value - 1;
+                    break;
+                case "NextPage":
+                    if ((document.getElementById('PageNum').value +1) < 1) { alert("頁數不得<1"); break; }
+                    document.getElementById('PageNum').value = Number(document.getElementById('PageNum').value) + 1;
+                    break;
+                default:
+                    document.getElementById('PageNum').value = 1;
+                    break;
+            }
+
+            var PageNum = $('#PageNum').val(), PageSize = $('#PageSize').val()
+            
+            //ie8用
+            var AttrArray = [];
+            for (var k in obj) {
+                if (obj.hasOwnProperty(k))
+                    AttrArray.push(k);
+            }
+
+            var Starti = (PageNum - 1) * PageSize + 1;
+            var Endi = PageNum * PageSize;
+
+            if (Endi >= AttrArray.length) {
+                alert("已經到最末頁");
+                Endi = AttrArray.length;
+                if (Starti > AttrArray.length) {
+                    PageNum = PageNum - 1;
+                    $("#PageNum").val(PageNum)
+                    Starti = (PageNum - 1) * PageSize + 1;
+                }
+            }
+
+            //document.getElementById("EventTable").rows(1).cells(2).innerHTML = "測試";
+
+            for (var i = 0; i < PageSize ; i++) {
+                for (var j = 0; j < 24 ; j++) {
+                    document.getElementById("EventTable").rows(i).cells(j).innerHTML = "";
+                }
+            }
+
+            //換頁時把資料填入Table
+            var rowID = 0;
+
+            for (var i = Starti - 1; i < Endi ; i++) {
+               
+                document.getElementById("EventTable").rows(rowID).cells(0).innerHTML = obj[AttrArray[i]].TD0.Value;
+                document.getElementById("EventTable").rows(rowID).cells(1).innerHTML = obj[AttrArray[i]].TD1.Value;
+                document.getElementById("EventTable").rows(rowID).cells(2).innerHTML = obj[AttrArray[i]].TD2.Value;
+                document.getElementById("EventTable").rows(rowID).cells(3).innerHTML = obj[AttrArray[i]].TD3.Value;
+                document.getElementById("EventTable").rows(rowID).cells(4).innerHTML = obj[AttrArray[i]].TD4.Value;
+                document.getElementById("EventTable").rows(rowID).cells(5).innerHTML = obj[AttrArray[i]].TD5.Value;
+                document.getElementById("EventTable").rows(rowID).cells(6).innerHTML = obj[AttrArray[i]].TD6.Value;
+                document.getElementById("EventTable").rows(rowID).cells(7).innerHTML = obj[AttrArray[i]].TD7.Value;
+                document.getElementById("EventTable").rows(rowID).cells(8).innerHTML = obj[AttrArray[i]].TD8.Value;
+                document.getElementById("EventTable").rows(rowID).cells(9).innerHTML = obj[AttrArray[i]].TD9.Value;
+                document.getElementById("EventTable").rows(rowID).cells(10).innerHTML = obj[AttrArray[i]].TD10.Value;
+                document.getElementById("EventTable").rows(rowID).cells(11).innerHTML = obj[AttrArray[i]].TD11.Value;
+                document.getElementById("EventTable").rows(rowID).cells(12).innerHTML = obj[AttrArray[i]].TD12.Value;
+                document.getElementById("EventTable").rows(rowID).cells(13).innerHTML = obj[AttrArray[i]].TD13.Value;
+                document.getElementById("EventTable").rows(rowID).cells(14).innerHTML = obj[AttrArray[i]].TD14.Value;
+                document.getElementById("EventTable").rows(rowID).cells(15).innerHTML = obj[AttrArray[i]].TD15.Value;
+                document.getElementById("EventTable").rows(rowID).cells(16).innerHTML = obj[AttrArray[i]].TD16.Value;
+                document.getElementById("EventTable").rows(rowID).cells(17).innerHTML = obj[AttrArray[i]].TD17.Value;
+                document.getElementById("EventTable").rows(rowID).cells(18).innerHTML = obj[AttrArray[i]].TD18.Value;
+                document.getElementById("EventTable").rows(rowID).cells(19).innerHTML = obj[AttrArray[i]].TD19.Value;
+                document.getElementById("EventTable").rows(rowID).cells(20).innerHTML = obj[AttrArray[i]].TD20.Value;
+                document.getElementById("EventTable").rows(rowID).cells(21).innerHTML = obj[AttrArray[i]].TD21.Value;
+                document.getElementById("EventTable").rows(rowID).cells(22).innerHTML = obj[AttrArray[i]].TD22.Value;
+                document.getElementById("EventTable").rows(rowID).cells(23).innerHTML = obj[AttrArray[i]].TD23.Value;
+
+                rowID++;
+            }
+
+
+        }
+        
+        //取得RowData使用----------------------------------------------------------------------------------
+        function uf_EventQuery(PageNum, PageSize) {
+            var DeviceVal = 27898;
+
+                //先把查詢過的Event移除
+            if ($("#Event").length > 0) { $("#Event").remove(); }
+            if ($("#PageAll").length > 0) { $("#PageAll").remove(); }
+            if ($("#EventColName").length > 0) { $("#EventColName").remove(); }
+
+                var BeginDateVal;
+                var EndDateVal;
+                var TimeIntervalRadioChecked = $('input:radio[name="TimeInterval"]:checked').val();
+                //alert(TimeIntervalRadioChecked);
+                if (TimeIntervalRadioChecked == 1) {
+                    BeginDateVal = $('#BeginDate').val();
+                    EndDateVal = $('#EndDate').val();
+                }
+
+                var EventColName = "";
+                //取得ColName
+                $.ajax({
+                    url: "DBAccess/EventColNameStr.aspx",
+                    type: "post",
+                    data: null,
+                    contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                    async: true,
+                    dataType: "text",
+                    success: function (data) {
+
+                        objColName = eval("(" + data + ")")
+
+                        EventColName =
+                              "<tr>" +
+                                    "<td style='width:200px;'>" + objColName["R1"].TD0.Value + "</td>" +
+                                    "<td style='width:200px;'>" + objColName["R1"].TD1.Value + "</td>" +
+                                    "<td style='width:200px;'>" + objColName["R1"].TD2.Value + "</td>" +
+                                    "<td style='width:200px;'>" + objColName["R1"].TD3.Value + "</td>" +
+                                    "<td style='width:200px;'>" + objColName["R1"].TD4.Value + "</td>" +
+                                    "<td style='width:200px;'>" + objColName["R1"].TD5.Value + "</td>" +
+                                    "<td style='width:200px;'>" + objColName["R1"].TD6.Value + "</td>" +
+                                    "<td style='width:200px;'>" + objColName["R1"].TD7.Value + "</td>" +
+                                    "<td style='width:200px;'>" + objColName["R1"].TD8.Value + "</td>" +
+                                    "<td style='width:200px;'>" + objColName["R1"].TD9.Value + "</td>" +
+                                    "<td style='width:200px;'>" + objColName["R1"].TD10.Value + "</td>" +
+                                    "<td style='width:200px;'>" + objColName["R1"].TD11.Value + "</td>" +
+                                    "<td style='width:200px;'>" + objColName["R1"].TD12.Value + "</td>" +
+                                    "<td style='width:200px;'>" + objColName["R1"].TD13.Value + "</td>" +
+                                    "<td style='width:200px;'>" + objColName["R1"].TD14.Value + "</td>" +
+                                    "<td style='width:200px;'>" + objColName["R1"].TD15.Value + "</td>" +
+                                    "<td style='width:200px;'>" + objColName["R1"].TD16.Value + "</td>" +
+                                    "<td style='width:200px;'>" + objColName["R1"].TD17.Value + "</td>" +
+                                    "<td style='width:200px;'>" + objColName["R1"].TD18.Value + "</td>" +
+                                    "<td style='width:200px;'>" + objColName["R1"].TD19.Value + "</td>" +
+                                    "<td style='width:200px;'>" + objColName["R1"].TD20.Value + "</td>" +
+                                    "<td style='width:200px;'>" + objColName["R1"].TD21.Value + "</td>" +
+                                    "<td style='width:200px;'>" + objColName["R1"].TD22.Value + "</td>" +
+                                    "<td style='width:200px;'>" + objColName["R1"].TD23.Value + "</td>" +
+                              "</tr>"
+
+                        EventColName = "<div id = EventColName >" +
+                           "<table id='EventColTable'  border='1' style='width:4800px;'>" +
+                           EventColName +
+                           "</table>" +
+                           "</div>"
+
+                        alert(EventColName);
+
+                    }
+                });
+
+            //取得真實資料
+                $.ajax({
+                    url: "DBAccess/EventString.aspx",
+                    type: "post",
+                    data: { DeviceID: DeviceVal,
+                        BeginDate: BeginDateVal, 
+                        EndDate: EndDateVal, 
+                        PageSize: 1000, PageNum: 1, 
+                        SrcIPIncludeList: SrcIPStr,
+                        DestIPIncludeList: DestIPStr,
+                        SensorIPIncludeList: SenserIPStr, 
+                        EventNameIncludeList: EventNameStr
+                    },
+                    contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                    async: true,
+                    dataType: "text",
+                    success: function (data) {
+
+                        //可用Chrome->F12->console,看結果用
+                        //console.log(data);
+
+                        if (data == "") {
+                            $("body").append("No result~");
+                            return;
+                        }
+                        else {
+                            obj = eval("(" + data + ")")
+                        }
+                        //alert(obj.R1.TD0.Value);
+
+                        //使用kai的Json字串來做,可取出Attr值, 限>=ie9
+                        // var AttrArray = Object.getOwnPropertyNames(obj);
+                        //若上方函數可用,即可使用語法"<tr>" + "<td width='550'>" + obj["R1"]["TD1"]["Value"] + "</td>" + "</tr>" 
+                        //結果同"<tr>" + "<td width='550'>" + obj.R1.TD1.Value + "</td>" + "</tr>" 
+
+
+                        //ie8用
+                        var AttrArray = [];
+                        for (var k in obj) {
+                            if (obj.hasOwnProperty(k))
+                                AttrArray.push(k);
+                        }
+
+                        var Event = "";
+                         
+                        var Starti = (PageNum - 1) * PageSize + 1;
+                        var Endi = PageNum * PageSize;
+
+                        if (Endi >= AttrArray.length) {
+                            //alert("已經到最末頁");
+                            Endi = AttrArray.length;
+                            if (Starti > AttrArray.length) {
+                                PageNum = PageNum - 1;
+                                $("#PageNum").val(PageNum)
+                                Starti = (PageNum - 1) * PageSize + 1;
+                            }
+
+                        }
+
+                        //for (var i = 0; i < AttrArray.length; i++) {
+                        for (var i = Starti - 1; i <Endi ; i++) {
+                            Event = Event +
+                              "<tr>" +
+                                    "<td style='width:200px;'>" + obj[AttrArray[i]].TD0.Value + "</td>" +
+                                    "<td style='width:200px;'>" + obj[AttrArray[i]].TD1.Value + "</td>" +
+                                    "<td style='width:200px;'>" + obj[AttrArray[i]].TD2.Value + "</td>" +
+                                    "<td style='width:200px;'>" + obj[AttrArray[i]].TD3.Value + "</td>" +
+                                    "<td style='width:200px;'>" + obj[AttrArray[i]].TD4.Value + "</td>" +
+                                    "<td style='width:200px;'>" + obj[AttrArray[i]].TD5.Value + "</td>" +
+                                    "<td style='width:200px;'>" + obj[AttrArray[i]].TD6.Value + "</td>" +
+                                    "<td style='width:200px;'>" + obj[AttrArray[i]].TD7.Value + "</td>" +
+                                    "<td style='width:200px;'>" + obj[AttrArray[i]].TD8.Value + "</td>" +
+                                    "<td style='width:200px;'>" + obj[AttrArray[i]].TD9.Value + "</td>" +
+                                    "<td style='width:200px;'>" + obj[AttrArray[i]].TD10.Value + "</td>" +
+                                    "<td style='width:200px;'>" + obj[AttrArray[i]].TD11.Value + "</td>" +
+                                    "<td style='width:200px;'>" + obj[AttrArray[i]].TD12.Value + "</td>" +
+                                    "<td style='width:200px;'>" + obj[AttrArray[i]].TD13.Value + "</td>" +
+                                    "<td style='width:200px;'>" + obj[AttrArray[i]].TD14.Value + "</td>" +
+                                    "<td style='width:200px;'>" + obj[AttrArray[i]].TD15.Value + "</td>" +
+                                    "<td style='width:200px;'>" + obj[AttrArray[i]].TD16.Value + "</td>" +
+                                    "<td style='width:200px;'>" + obj[AttrArray[i]].TD17.Value + "</td>" +
+                                    "<td style='width:200px;'>" + obj[AttrArray[i]].TD18.Value + "</td>" +
+                                    "<td style='width:200px;'>" + obj[AttrArray[i]].TD19.Value + "</td>" +
+                                    "<td style='width:200px;'>" + obj[AttrArray[i]].TD20.Value + "</td>" +
+                                    "<td style='width:200px;'>" + obj[AttrArray[i]].TD21.Value + "</td>" +
+                                    "<td style='width:200px;'>" + obj[AttrArray[i]].TD22.Value + "</td>" +
+                                    "<td style='width:200px;'>" + obj[AttrArray[i]].TD23.Value + "</td>" +
+                              "</tr>"
+                        }
+
+                        Event =
+                            "<div id=PageAll>"+
+                            "<input class='Page' id='FirstPage' type='button' value='第一頁' onclick='uf_ChangePage(\"FirstPage\");'/>"+
+                            "<input class='Page' id='PrePage' type='button' value='上一頁' onclick='uf_ChangePage(\"PrePage\");'/>" +
+                            "<input class='Page' id='NextPage' type='button' value='下一頁' onclick='uf_ChangePage(\"NextPage\");'/>" +
+                            "頁碼<input id=PageNum type='text' value='" + PageNum + "' style='width:20px;'/>" +
+                            "每頁筆數<input id=PageSize type='text' value='" + PageSize + "' style='width:20px;'/>" +
+                            "</div>" +
+                            EventColName+
+                           "<div id = Event>" +
+                           "<table id='EventTable' border='1' style='width:4800px;'>" +
+                           Event +
+                           "</table>" +
+                           "</div>"
+
+                        alert(Event);
+                        $("body").append(Event);
+
+                    },
+                    error: function (data) {
+                        alert('Error');
+                    }
+
+                });
+        };
+
+        /*一張網頁剛開啟,Browser確實會把網頁從上到下順序跑一次
+        只不過發現$(function () 稱作匿名函式,會先跳過,直到把所有html執行完,再回來執行
+        所以在 $(function() 內  $("#Query").live("click", function () 前宣告的變數,會一直存在
+        因為此$(function() 只要網頁開著就一直存在
+        */
+        $(function () {
+
+            //初始化CalendarMove
+            //CalendarMove = document.getElementById("dataAll");
+            //CalendarMove.onmousedown = CalendarMoveHandle;
+
+            //若是不用bind,用live的話要放在,這樣才不會每次出來一個Calendar,就出現一次
+            //$("#Submmit").live("click", function () {
+            //    var BeginDate = $("#dateField").val();
+            //    $("#BeginDate").val(BeginDate);
+            //    $("#dataAll").remove();
+            // })
+
+            $(".Calendar").live("click", function () {
+                //this就是當時進行click這個動作的node
+                //<input class ="Calendar" type="button" id="BeginCalendar"/> or
+                //<input class ="Calendar" type="button" id="EndCalendar"/>
+                //將node加上$後括起來,就會變成JQuery物件
+                var ButtonJObject = $(this);
+
+                $.ajax({
+                    url: "Calendar.html",
+                    type: "get",
+                    data: " ",
+                    contentType: "text/xml;charset-utf-8",
+                    async: true,
+                    dataType: "text",
+                    success: function (data) {
+                        var ScriptStart = data.indexOf("<script");
+                        var ScriptEnd = data.indexOf("/script>");
+                        var dataScript = data.substring(ScriptStart, ScriptEnd) + "/script>";
+                        //$("body").append(dataScript);
+
+                        var bodyStart = data.indexOf("<body");
+                        var bodyEnd = data.indexOf("/body>");
+                        var databody = data.substring(bodyStart, bodyEnd) + "/body>";
+                        //$("body").append(databody);
+
+                        //若#dataAll存在,先移除
+                        //if ($("#dataAll").length > 0) { $("#dataAll").remove(); }
+                        //var dataAll = "<div id = dataAll>" + dataScript + databody + "</div>"
+                        //$("body").append(dataAll);
+
+                        document.getElementById("dataAll").innerHTML = dataScript + databody;
+                        $("body").append(dataScript);
+                        thisMonth();
+
+                        //變成JQuery物件才可以使用函數attr
+                        //alert(ButtonJObject.attr("id"));
+
+                        $(function () {
+                            //要用bind,就是一次性的click功能
+                            //若用live就會一直常駐,每次click就產生一個新的sensor
+                            //這樣當第一個live把$("#dataAll").remove();後,就都找不到#dateField了
+                            $("#Submmit").bind("click", function () {
+                                var Day = $("#dateField").val();
+                                var Hour = $("#Hour").val();
+                                var Min = $("#Min").val();
+                                var Sec = $("#Sec").val();
+                                var Date = Day + " " + Hour + ":" + Min + ":" + Sec
+
+                                //變成JQuery物件才可以使用函數attr
+                                //利用id值 判別現在是click 哪個Button,填到對應值去
+                                if (ButtonJObject.attr("id") == "BeginCalendar") { $("#BeginDate").val(Date); }
+                                if (ButtonJObject.attr("id") == "EndCalendar") { $("#EndDate").val(Date); }
+
+                                document.getElementById("dataAll").innerHTML = "";
+                            })
+
+                            //刪除Calendar用
+                            $("#DeleteCalendar").bind("click", function () { document.getElementById("dataAll").innerHTML = ""; })
+
+                        })
+                    }
+                })
+            })
+
+        });
+
+
+
+</script>
+
+
+<body>
+    檢視類型:
+    <select> 
+        <option>Event Detail View</option>
+        <option>Event Detail View2</option>
+    </select> 
+
+    <input id="Query2" type="button" value="查詢" onclick='uf_EventQuery(1,10);'/>
+
+    <br/>
+    查詢時間區間:
+    <input type="radio" name="TimeInterval" value="1"/>
+    <input  id="BeginDate" type="text" value="2010-12-24 10:00:00"/><input class ="Calendar" type="button" id="BeginCalendar"/>
+    ~
+    <input  id="EndDate" type="text" value="2010-12-24 11:00:00"/><input class ="Calendar" type="button" id="EndCalendar"/>
+     
+    <input type="radio" name="TimeInterval" value="2"/>     
+    <select>
+        <option>Last 3 mins</option>
+        <option>Last week</option>
+        <option>Last month</option> 
+    </select>      
+
+    <hr style='width: 100%;' />
+     <table border='1' style='width: 100%;'>
+        <tr><!--Row-->
+            <td style='width: 18%;'>來源IP位址:</td><td><input type="button" style='width: 100%;' value="..." onclick='uf_GetSrcIP();' /></td>
+            <td style='width: 18%;'>目的IP位址:</td><td><input type="button" style='width: 100%;' value="..." onclick='uf_GetDestIP();' /></td>
+            <td style='width: 18%;'>偵測器IP位址:</td><td><input type="button" style='width: 100%;' value="..." onclick='uf_GetSenserIP();'/></td>
+            <td style='width: 18%;'>事件名稱: </td><td><input type="button" style='width: 100%;' value="..." onclick='uf_GetEventName();' /></td>
+            <td style='width: 18%;'>主機名稱:</td><td><input type="button" style='width: 100%;' value="..." /></td>
+        </tr>
+         <tr><!--Row-->
+            <td style='width: 18%;'>統一事件名稱:</td><td><input type="button" style='width: 100%;' value="..." /></td>
+            <td style='width: 18%;'>是否關聯案件:</td><td><input type="button" style='width: 100%;' value="..." /></td>
+            <td style='width: 18%;'>事件關聯狀態: </td><td><input type="button" style='width: 100%;' value="..." /></td>
+            <td style='width: 18%;'></td><td><input type="button" style='width: 100%;' value="..." /></td>
+            <td style='width: 18%;'></td><td><input type="button" style='width: 100%;' value="..." /></td>
+        </tr>
+    </table>
+    <hr style='width: 100%;' />
+</body>
+        <div id = dataAll></div>
+</html>
+

@@ -1,0 +1,508 @@
+﻿<!DOCTYPE html>
+<style>
+    #dataAll
+    {
+        cursor: move;
+        position:absolute;
+    }
+</style>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+</head>
+    
+    <script>
+        function uf_ChangePage(PageStatus) {
+
+            switch (PageStatus) {
+                case "FirstPage":
+                    document.getElementById('PageNum').value = 1;
+                    break;
+                case "PrePage":
+                    if ((document.getElementById('PageNum').value - 1) < 1) { alert("頁數不得<1"); break;}
+                    document.getElementById('PageNum').value = document.getElementById('PageNum').value - 1;
+                    break;
+                case "NextPage":
+                    if ((document.getElementById('PageNum').value +1) < 1) { alert("頁數不得<1"); break; }
+                    document.getElementById('PageNum').value = Number(document.getElementById('PageNum').value) + 1;
+                    break;
+                default:
+                    document.getElementById('PageNum').value = 1;
+                    break;
+            }
+
+        }
+
+        /*一張網頁剛開啟,Browser確實會把網頁從上到下順序跑一次
+        只不過發現$(function () 稱作匿名函式,會先跳過,直到把所有html執行完,再回來執行
+        所以在 $(function() 內  $("#Query").live("click", function () 前宣告的變數,會一直存在
+        因為此$(function() 只要網頁開著就一直存在
+        */
+        $(function () {
+            var DeviceVal = 27898;
+           
+            $("#Query").live("click", function () {
+                //先把查詢過的Event移除
+                if ($("#Event").length > 0) { $("#Event").remove(); }
+
+                var BeginDateVal;
+                var EndDateVal;
+                var TimeIntervalRadioChecked = $('input:radio[name="TimeInterval"]:checked').val();
+                alert(TimeIntervalRadioChecked);
+                if (TimeIntervalRadioChecked==1) {
+                    BeginDateVal = $('#BeginDate').val();
+                    EndDateVal = $('#EndDate').val();
+                }
+
+                $.ajax({
+                    url: "DBAccess/Event.aspx",
+                    type: "post",
+                    data: { DeviceID: DeviceVal, BeginDate: BeginDateVal, EndDate: EndDateVal,PageSize:20,PageNum:1 },
+                    contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                    async: true,
+                    dataType: "text",
+                    success: function (data) {
+                        var Event = "<div id = Event>" + data + "</div>"
+                        $("body").append(Event);
+                    },
+                    error: function (data) {
+                        alert('Error');
+                    }
+
+                });
+            });
+
+                //取得JsonString再顯示
+                $("#Query2").live("click", function () {
+                    //先把查詢過的Event移除
+                    if ($("#Event").length > 0) { $("#Event").remove(); }
+
+                    var BeginDateVal;
+                    var EndDateVal;
+                    var TimeIntervalRadioChecked = $('input:radio[name="TimeInterval"]:checked').val();
+                    //alert(TimeIntervalRadioChecked);
+                    if (TimeIntervalRadioChecked == 1) {
+                        BeginDateVal = $('#BeginDate').val();
+                        EndDateVal = $('#EndDate').val();
+                    }
+
+
+                    $.ajax({
+                        url: "DBAccess/EventString.aspx",
+                        type: "post",
+                        data: null,
+                        contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                        async: true,
+                        dataType: "text",
+                        success: function (data) {
+
+                            //jsonString測試用
+                            //var myCat = { R1: { TD0: { Value: "1" }, TD1: { Value: "2010/12/24 上午 10:00:09" }, TD2: { Value: "" }, TD3: { Value: "203.69.245.16(Taiwan)" }, TD4: { Value: "46473" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "2" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Multiple WEB-FRONTPAGE shtml.exe access from 203.69.245.16]" }, TD22: { Value: "1334451327" }, TD23: { Value: "1530" } }, R2: { TD0: { Value: "2" }, TD1: { Value: "2010/12/24 上午 10:01:22" }, TD2: { Value: "Seednet-TaipeiDP-S" }, TD3: { Value: "210.64.14.33(Taiwan)" }, TD4: { Value: "2389" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "4" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451328" }, TD23: { Value: "1530" } }, R3: { TD0: { Value: "3" }, TD1: { Value: "2010/12/24 上午 10:01:23" }, TD2: { Value: "Seednet-TaipeiDP-S" }, TD3: { Value: "210.64.14.33(Taiwan)" }, TD4: { Value: "2391" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "6" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451329" }, TD23: { Value: "1530" } }, R4: { TD0: { Value: "4" }, TD1: { Value: "2010/12/24 上午 10:13:26" }, TD2: { Value: "" }, TD3: { Value: "218.103.111.106(Hong Kong)" }, TD4: { Value: "1640" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.169.130(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "4" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451330" }, TD23: { Value: "1530" } }, R5: { TD0: { Value: "5" }, TD1: { Value: "2010/12/24 上午 10:18:28" }, TD2: { Value: "Chunghwa Telecom Data Communication Business Group" }, TD3: { Value: "220.130.180.66(Taiwan)" }, TD4: { Value: "9327" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.108(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "1" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=GET],[:evntDesc=BlueCoat proxy manipulation attempt - 1]" }, TD22: { Value: "1334451331" }, TD23: { Value: "1530" } }, R6: { TD0: { Value: "6" }, TD1: { Value: "2010/12/24 上午 10:19:37" }, TD2: { Value: "CENTER BANK" }, TD3: { Value: "210.69.120.65(Taiwan)" }, TD4: { Value: "11795" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "8" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451332" }, TD23: { Value: "1530" } }, R7: { TD0: { Value: "7" }, TD1: { Value: "2010/12/24 上午 10:19:38" }, TD2: { Value: "CENTER BANK" }, TD3: { Value: "210.69.120.65(Taiwan)" }, TD4: { Value: "47636" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "10" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451333" }, TD23: { Value: "1530" } }, R8: { TD0: { Value: "8" }, TD1: { Value: "2010/12/24 上午 10:25:05" }, TD2: { Value: "" }, TD3: { Value: "123.195.60.165(Taiwan)" }, TD4: { Value: "2064" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "12" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451334" }, TD23: { Value: "1530" } }, R9: { TD0: { Value: "9" }, TD1: { Value: "2010/12/24 上午 10:28:35" }, TD2: { Value: "Chunghwa Telecom Data Communication Business Group" }, TD3: { Value: "220.129.67.148(Taiwan)" }, TD4: { Value: "1852" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "14" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451335" }, TD23: { Value: "1530" } }, R10: { TD0: { Value: "10" }, TD1: { Value: "2010/12/24 上午 10:29:27" }, TD2: { Value: "New Century InfoComm Tech. Co., Ltd." }, TD3: { Value: "122.147.13.154(Taiwan)" }, TD4: { Value: "42597" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "16" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451336" }, TD23: { Value: "1530" } }, R11: { TD0: { Value: "11" }, TD1: { Value: "2010/12/24 上午 10:29:37" }, TD2: { Value: "Chunghwa Telecom Data Communication Business Group" }, TD3: { Value: "220.129.67.148(Taiwan)" }, TD4: { Value: "1860" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "18" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451337" }, TD23: { Value: "1530" } }, R12: { TD0: { Value: "12" }, TD1: { Value: "2010/12/24 上午 10:29:43" }, TD2: { Value: "New Century InfoComm Tech. Co., Ltd." }, TD3: { Value: "122.147.13.154(Taiwan)" }, TD4: { Value: "42599" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "20" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451338" }, TD23: { Value: "1530" } }, R13: { TD0: { Value: "13" }, TD1: { Value: "2010/12/24 上午 10:29:53" }, TD2: { Value: "" }, TD3: { Value: "116.239.12.2(China)" }, TD4: { Value: "1960" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "22" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451339" }, TD23: { Value: "1530" } }, R14: { TD0: { Value: "14" }, TD1: { Value: "2010/12/24 上午 10:30:23" }, TD2: { Value: "New Century InfoComm Tech. Co., Ltd." }, TD3: { Value: "122.147.13.154(Taiwan)" }, TD4: { Value: "42603" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "24" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451340" }, TD23: { Value: "1530" } }, R15: { TD0: { Value: "15" }, TD1: { Value: "2010/12/24 上午 10:30:25" }, TD2: { Value: "Chunghwa Telecom Data Communication Business Group" }, TD3: { Value: "220.129.67.148(Taiwan)" }, TD4: { Value: "1867" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "26" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451341" }, TD23: { Value: "1530" } }, R16: { TD0: { Value: "16" }, TD1: { Value: "2010/12/24 上午 10:30:28" }, TD2: { Value: "NOMURA HOLDING AMERICA" }, TD3: { Value: "192.147.55.3(United States)" }, TD4: { Value: "58629" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "28" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451342" }, TD23: { Value: "1530" } }, R17: { TD0: { Value: "17" }, TD1: { Value: "2010/12/24 上午 10:30:31" }, TD2: { Value: "Taiwan Fixed Network CO.,LTD." }, TD3: { Value: "219.87.131.146(Taiwan)" }, TD4: { Value: "51176" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "234" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451343" }, TD23: { Value: "1530" } }, R18: { TD0: { Value: "18" }, TD1: { Value: "2010/12/24 上午 10:34:31" }, TD2: { Value: "New Century InfoComm Tech. Co., Ltd." }, TD3: { Value: "122.147.13.154(Taiwan)" }, TD4: { Value: "42661" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "30" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451344" }, TD23: { Value: "1530" } }, R19: { TD0: { Value: "19" }, TD1: { Value: "2010/12/24 上午 10:34:59" }, TD2: { Value: "New Century InfoComm Tech. Co., Ltd." }, TD3: { Value: "122.147.13.154(Taiwan)" }, TD4: { Value: "42668" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "32" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451345" }, TD23: { Value: "1530" } }, R20: { TD0: { Value: "20" }, TD1: { Value: "2010/12/24 上午 10:35:21" }, TD2: { Value: "New Century InfoComm Tech. Co., Ltd." }, TD3: { Value: "122.147.13.154(Taiwan)" }, TD4: { Value: "42669" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "34" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451346" }, TD23: { Value: "1530" } } };
+                            //alert(myCat.R1.TD1.Value);
+
+                            //可用Chrome->F12->console,看結果用
+                            //console.log(data);
+
+                            var obj = eval("(" + data + ")");
+                            //alert(obj.R1.TD0.Value);
+
+                            //使用kai的Json字串來做,可取出Attr值, 限>=ie9
+                            // var AttrArray = Object.getOwnPropertyNames(obj);
+                            //若上方函數可用,即可使用語法"<tr>" + "<td width='550'>" + obj["R1"]["TD1"]["Value"] + "</td>" + "</tr>" 
+                            //結果同"<tr>" + "<td width='550'>" + obj.R1.TD1.Value + "</td>" + "</tr>" 
+
+
+                            //ie8用
+                            var AttrArray = [];
+                            for (var k in obj) {
+                                if (obj.hasOwnProperty(k))
+                                    AttrArray.push(k);
+                            }
+
+                            var Event = "";
+
+                            for (var i = 0; i < AttrArray.length; i++) {
+                                Event = Event +
+                                  "<tr>" +
+                                        "<td width='550'>" + obj[AttrArray[i]].TD0.Value + "</td>" +
+                                        "<td width='550'>" + obj[AttrArray[i]].TD1.Value + "</td>" +
+                                        "<td width='550'>" + obj[AttrArray[i]].TD2.Value + "</td>" +
+                                        "<td width='550'>" + obj[AttrArray[i]].TD3.Value + "</td>" +
+                                        "<td width='550'>" + obj[AttrArray[i]].TD4.Value + "</td>" +
+                                        "<td width='550'>" + obj[AttrArray[i]].TD5.Value + "</td>" +
+                                        "<td width='550'>" + obj[AttrArray[i]].TD6.Value + "</td>" +
+                                        "<td width='550'>" + obj[AttrArray[i]].TD7.Value + "</td>" +
+                                        "<td width='550'>" + obj[AttrArray[i]].TD8.Value + "</td>" +
+                                        "<td width='550'>" + obj[AttrArray[i]].TD9.Value + "</td>" +
+                                        "<td width='550'>" + obj[AttrArray[i]].TD10.Value + "</td>" +
+                                        "<td width='550'>" + obj[AttrArray[i]].TD11.Value + "</td>" +
+                                        "<td width='550'>" + obj[AttrArray[i]].TD12.Value + "</td>" +
+                                        "<td width='550'>" + obj[AttrArray[i]].TD13.Value + "</td>" +
+                                        "<td width='550'>" + obj[AttrArray[i]].TD14.Value + "</td>" +
+                                        "<td width='550'>" + obj[AttrArray[i]].TD15.Value + "</td>" +
+                                        "<td width='550'>" + obj[AttrArray[i]].TD16.Value + "</td>" +
+                                        "<td width='550'>" + obj[AttrArray[i]].TD17.Value + "</td>" +
+                                        "<td width='550'>" + obj[AttrArray[i]].TD18.Value + "</td>" +
+                                        "<td width='550'>" + obj[AttrArray[i]].TD19.Value + "</td>" +
+                                        "<td width='550'>" + obj[AttrArray[i]].TD20.Value + "</td>" +
+                                        "<td width='550'>" + obj[AttrArray[i]].TD21.Value + "</td>" +
+                                        "<td width='550'>" + obj[AttrArray[i]].TD22.Value + "</td>" +
+                                        "<td width='550'>" + obj[AttrArray[i]].TD23.Value + "</td>" +
+                                  "</tr>"
+                            }
+
+
+                            //Json陣列形式的顯示
+                            /*
+                            for (var i = 0; i < obj.length; i++) {
+                                Event = Event +
+                                  "<tr>" +
+                                        "<td width='550'>" + obj[i].TD0.Value + "</td>" +
+                                        "<td width='550'>" + obj[i].TD1.Value + "</td>" +
+                                        "<td width='550'>" + obj[i].TD2.Value + "</td>" +
+                                        "<td width='550'>" + obj[i].TD3.Value + "</td>" +
+                                        "<td width='550'>" + obj[i].TD4.Value + "</td>" +
+                                        "<td width='550'>" + obj[i].TD5.Value + "</td>" +
+                                        "<td width='550'>" + obj[i].TD6.Value + "</td>" +
+                                        "<td width='550'>" + obj[i].TD7.Value + "</td>" +
+                                        "<td width='550'>" + obj[i].TD8.Value + "</td>" +
+                                        "<td width='550'>" + obj[i].TD9.Value + "</td>" +
+                                        "<td width='550'>" + obj[i].TD10.Value + "</td>" +
+                                        "<td width='550'>" + obj[i].TD11.Value + "</td>" +
+                                        "<td width='550'>" + obj[i].TD12.Value + "</td>" +
+                                        "<td width='550'>" + obj[i].TD13.Value + "</td>" +
+                                        "<td width='550'>" + obj[i].TD14.Value + "</td>" +
+                                        "<td width='550'>" + obj[i].TD15.Value + "</td>" +
+                                        "<td width='550'>" + obj[i].TD16.Value + "</td>" +
+                                        "<td width='550'>" + obj[i].TD17.Value + "</td>" +
+                                        "<td width='550'>" + obj[i].TD18.Value + "</td>" +
+                                        "<td width='550'>" + obj[i].TD19.Value + "</td>" +
+                                        "<td width='550'>" + obj[i].TD20.Value + "</td>" +
+                                        "<td width='550'>" + obj[i].TD21.Value + "</td>" +
+                                        "<td width='550'>" + obj[i].TD22.Value + "</td>" +
+                                        "<td width='550'>" + obj[i].TD23.Value + "</td>" +
+                                  "</tr>"
+                            }
+                            */
+
+                            Event =
+                               "<div id = Event>" +
+                               "<table width='800' border='1'>" +
+                               Event +
+                               "</table>" +
+                               "</div>"
+
+                            $("body").append(Event);
+
+                        },
+                        error: function (data) {
+                            alert('Error');
+                        }
+
+                    });
+                });
+            
+
+            //若是不用bind,用live的話要放在,這樣才不會每次出來一個Calendar,就出現一次
+            //$("#Submmit").live("click", function () {
+            //    var BeginDate = $("#dateField").val();
+            //    $("#BeginDate").val(BeginDate);
+            //    $("#dataAll").remove();
+            // })
+
+            $(".Calendar").live("click", function () {
+                //this就是當時進行click這個動作的node
+                //<input class ="Calendar" type="button" id="BeginCalendar"/> or
+                //<input class ="Calendar" type="button" id="EndCalendar"/>
+                //將node加上$後括起來,就會變成JQuery物件
+                var ButtonJObject = $(this);
+
+                $.ajax({
+                    url: "Calendar.html",
+                    type: "get",
+                    data: " ",
+                    contentType: "text/xml;charset-utf-8",
+                    async: true,
+                    dataType: "text",
+                    success: function (data) {
+                        var ScriptStart = data.indexOf("<script");
+                        var ScriptEnd = data.indexOf("/script>");
+                        var dataScript = data.substring(ScriptStart, ScriptEnd) + "/script>";
+                        //$("body").append(dataScript);
+
+                        var bodyStart = data.indexOf("<body");
+                        var bodyEnd = data.indexOf("/body>");
+                        var databody = data.substring(bodyStart, bodyEnd) + "/body>";
+                        //$("body").append(databody);
+
+                        //若#dataAll存在,先移除
+                        if ($("#dataAll").length > 0) { $("#dataAll").remove(); }
+                        var dataAll = "<div id = dataAll>" + dataScript + databody + "</div>"
+
+                        //alert(dataAll);
+                        $("body").append(dataAll);
+                        thisMonth();
+
+                        //變成JQuery物件才可以使用函數attr
+                        //alert(ButtonJObject.attr("id"));
+
+                        $(function () {
+                            //MoveDIV
+                            /*
+                               var bool = false;
+                               var offsetX = 0;
+                               var offsetY = 0;
+                               $("#dataAll").mousedown(function () {
+                                   bool = true;
+                                   offsetX = event.offsetX;
+                                   offsetY = event.offsetY;
+                                   $(this).css('cursor', 'move');
+                               })
+                               .mouseup(function () {
+                                   bool = false;
+                               })
+                               $(document).mousemove(function (e) {
+                                   if (!bool)
+                                       return;
+                                   var x = event.clientX - offsetX;
+                                   var y = event.clientY - offsetY;
+                                   $("#dataAll").css("left", x);
+                                   $("#dataAll").css("top", y)
+                               })
+                              */
+
+                            //要用bind,就是一次性的click功能
+                            //若用live就會一直常駐,每次click就產生一個新的sensor
+                            //這樣當第一個live把$("#dataAll").remove();後,就都找不到#dateField了
+                            $("#Submmit").bind("click", function () {
+                                var Day = $("#dateField").val();
+                                var Hour = $("#Hour").val();
+                                var Min = $("#Min").val();
+                                var Sec = $("#Sec").val();
+                                var Date = Day + " " + Hour + ":" + Min + ":" + Sec
+
+                                //變成JQuery物件才可以使用函數attr
+                                //利用id值 判別現在是click 哪個Button,填到對應值去
+                                if (ButtonJObject.attr("id") == "BeginCalendar") { $("#BeginDate").val(Date); }
+                                if (ButtonJObject.attr("id") == "EndCalendar") { $("#EndDate").val(Date); }
+
+                                $("#dataAll").remove();
+                            })
+
+                        })
+                    }
+                })
+            })
+
+        });
+
+
+            $(function () {
+            var DeviceVal = 27898;
+
+            //取得JsonString再顯示
+            $(".Page").live("click", function () {
+                //先把查詢過的Event移除
+                if ($("#Event").length > 0) { $("#Event").remove(); }
+
+                var BeginDateVal;
+                var EndDateVal;
+                var TimeIntervalRadioChecked = $('input:radio[name="TimeInterval"]:checked').val();
+                //alert(TimeIntervalRadioChecked);
+                if (TimeIntervalRadioChecked == 1) {
+                    BeginDateVal = $('#BeginDate').val();
+                    EndDateVal = $('#EndDate').val();
+                }
+
+                var PageNumVal=$('#PageNum').val(), PageSizeVal=$('#PageSize').val() 
+
+                $.ajax({
+                    url: "DBAccess/EventString.aspx",
+                    type: "post",
+                    data: null,
+                    contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                    async: true,
+                    dataType: "text",
+                    success: function (data) {
+
+                        //jsonString測試用
+                        //var myCat = { R1: { TD0: { Value: "1" }, TD1: { Value: "2010/12/24 上午 10:00:09" }, TD2: { Value: "" }, TD3: { Value: "203.69.245.16(Taiwan)" }, TD4: { Value: "46473" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "2" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Multiple WEB-FRONTPAGE shtml.exe access from 203.69.245.16]" }, TD22: { Value: "1334451327" }, TD23: { Value: "1530" } }, R2: { TD0: { Value: "2" }, TD1: { Value: "2010/12/24 上午 10:01:22" }, TD2: { Value: "Seednet-TaipeiDP-S" }, TD3: { Value: "210.64.14.33(Taiwan)" }, TD4: { Value: "2389" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "4" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451328" }, TD23: { Value: "1530" } }, R3: { TD0: { Value: "3" }, TD1: { Value: "2010/12/24 上午 10:01:23" }, TD2: { Value: "Seednet-TaipeiDP-S" }, TD3: { Value: "210.64.14.33(Taiwan)" }, TD4: { Value: "2391" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "6" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451329" }, TD23: { Value: "1530" } }, R4: { TD0: { Value: "4" }, TD1: { Value: "2010/12/24 上午 10:13:26" }, TD2: { Value: "" }, TD3: { Value: "218.103.111.106(Hong Kong)" }, TD4: { Value: "1640" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.169.130(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "4" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451330" }, TD23: { Value: "1530" } }, R5: { TD0: { Value: "5" }, TD1: { Value: "2010/12/24 上午 10:18:28" }, TD2: { Value: "Chunghwa Telecom Data Communication Business Group" }, TD3: { Value: "220.130.180.66(Taiwan)" }, TD4: { Value: "9327" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.108(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "1" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=GET],[:evntDesc=BlueCoat proxy manipulation attempt - 1]" }, TD22: { Value: "1334451331" }, TD23: { Value: "1530" } }, R6: { TD0: { Value: "6" }, TD1: { Value: "2010/12/24 上午 10:19:37" }, TD2: { Value: "CENTER BANK" }, TD3: { Value: "210.69.120.65(Taiwan)" }, TD4: { Value: "11795" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "8" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451332" }, TD23: { Value: "1530" } }, R7: { TD0: { Value: "7" }, TD1: { Value: "2010/12/24 上午 10:19:38" }, TD2: { Value: "CENTER BANK" }, TD3: { Value: "210.69.120.65(Taiwan)" }, TD4: { Value: "47636" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "10" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451333" }, TD23: { Value: "1530" } }, R8: { TD0: { Value: "8" }, TD1: { Value: "2010/12/24 上午 10:25:05" }, TD2: { Value: "" }, TD3: { Value: "123.195.60.165(Taiwan)" }, TD4: { Value: "2064" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "12" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451334" }, TD23: { Value: "1530" } }, R9: { TD0: { Value: "9" }, TD1: { Value: "2010/12/24 上午 10:28:35" }, TD2: { Value: "Chunghwa Telecom Data Communication Business Group" }, TD3: { Value: "220.129.67.148(Taiwan)" }, TD4: { Value: "1852" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "14" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451335" }, TD23: { Value: "1530" } }, R10: { TD0: { Value: "10" }, TD1: { Value: "2010/12/24 上午 10:29:27" }, TD2: { Value: "New Century InfoComm Tech. Co., Ltd." }, TD3: { Value: "122.147.13.154(Taiwan)" }, TD4: { Value: "42597" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "16" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451336" }, TD23: { Value: "1530" } }, R11: { TD0: { Value: "11" }, TD1: { Value: "2010/12/24 上午 10:29:37" }, TD2: { Value: "Chunghwa Telecom Data Communication Business Group" }, TD3: { Value: "220.129.67.148(Taiwan)" }, TD4: { Value: "1860" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "18" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451337" }, TD23: { Value: "1530" } }, R12: { TD0: { Value: "12" }, TD1: { Value: "2010/12/24 上午 10:29:43" }, TD2: { Value: "New Century InfoComm Tech. Co., Ltd." }, TD3: { Value: "122.147.13.154(Taiwan)" }, TD4: { Value: "42599" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "20" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451338" }, TD23: { Value: "1530" } }, R13: { TD0: { Value: "13" }, TD1: { Value: "2010/12/24 上午 10:29:53" }, TD2: { Value: "" }, TD3: { Value: "116.239.12.2(China)" }, TD4: { Value: "1960" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "22" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451339" }, TD23: { Value: "1530" } }, R14: { TD0: { Value: "14" }, TD1: { Value: "2010/12/24 上午 10:30:23" }, TD2: { Value: "New Century InfoComm Tech. Co., Ltd." }, TD3: { Value: "122.147.13.154(Taiwan)" }, TD4: { Value: "42603" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "24" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451340" }, TD23: { Value: "1530" } }, R15: { TD0: { Value: "15" }, TD1: { Value: "2010/12/24 上午 10:30:25" }, TD2: { Value: "Chunghwa Telecom Data Communication Business Group" }, TD3: { Value: "220.129.67.148(Taiwan)" }, TD4: { Value: "1867" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "26" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451341" }, TD23: { Value: "1530" } }, R16: { TD0: { Value: "16" }, TD1: { Value: "2010/12/24 上午 10:30:28" }, TD2: { Value: "NOMURA HOLDING AMERICA" }, TD3: { Value: "192.147.55.3(United States)" }, TD4: { Value: "58629" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "28" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451342" }, TD23: { Value: "1530" } }, R17: { TD0: { Value: "17" }, TD1: { Value: "2010/12/24 上午 10:30:31" }, TD2: { Value: "Taiwan Fixed Network CO.,LTD." }, TD3: { Value: "219.87.131.146(Taiwan)" }, TD4: { Value: "51176" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "234" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451343" }, TD23: { Value: "1530" } }, R18: { TD0: { Value: "18" }, TD1: { Value: "2010/12/24 上午 10:34:31" }, TD2: { Value: "New Century InfoComm Tech. Co., Ltd." }, TD3: { Value: "122.147.13.154(Taiwan)" }, TD4: { Value: "42661" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "30" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451344" }, TD23: { Value: "1530" } }, R19: { TD0: { Value: "19" }, TD1: { Value: "2010/12/24 上午 10:34:59" }, TD2: { Value: "New Century InfoComm Tech. Co., Ltd." }, TD3: { Value: "122.147.13.154(Taiwan)" }, TD4: { Value: "42668" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "32" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451345" }, TD23: { Value: "1530" } }, R20: { TD0: { Value: "20" }, TD1: { Value: "2010/12/24 上午 10:35:21" }, TD2: { Value: "New Century InfoComm Tech. Co., Ltd." }, TD3: { Value: "122.147.13.154(Taiwan)" }, TD4: { Value: "42669" }, TD5: { Value: ".WAF.exploit.www." }, TD6: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD7: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD8: { Value: "iMPERVA SecureSphere Web Application Firewall" }, TD9: { Value: "HTTP Signature Violation" }, TD10: { Value: "172.17.169.253" }, TD11: { Value: "High" }, TD12: { Value: "Normal, Threat Blocked" }, TD13: { Value: "172.17.168.169(測試)" }, TD14: { Value: "" }, TD15: { Value: "TCP" }, TD16: { Value: "80" }, TD17: { Value: "" }, TD18: { Value: "" }, TD19: { Value: "34" }, TD20: { Value: "" }, TD21: { Value: "[:webMethod=POST],[:evntDesc=Distributed WEB-FRONTPAGE _vti_rpc access(+)]" }, TD22: { Value: "1334451346" }, TD23: { Value: "1530" } } };
+                        //alert(myCat.R1.TD1.Value);
+
+                        //可用Chrome->F12->console,看結果用
+                        //console.log(data);
+
+                        var obj = eval("(" + data + ")");
+                        //alert(obj.R1.TD0.Value);
+
+                        //使用kai的Json字串來做,可取出Attr值, 限>=ie9
+                        // var AttrArray = Object.getOwnPropertyNames(obj);
+                        //若上方函數可用,即可使用語法"<tr>" + "<td width='550'>" + obj["R1"]["TD1"]["Value"] + "</td>" + "</tr>" 
+                        //結果同"<tr>" + "<td width='550'>" + obj.R1.TD1.Value + "</td>" + "</tr>" 
+
+
+                        //ie8用
+                        var AttrArray = [];
+                        for (var k in obj) {
+                            if (obj.hasOwnProperty(k))
+                                AttrArray.push(k);
+                        }
+
+                        var Event = "";
+                        
+                        var Starti=(PageNumVal-1)*PageSizeVal+1;
+                        var Endi = PageNumVal * PageSizeVal;
+
+                        if (Endi >= AttrArray.length) {
+                            alert("已經到最末頁");
+                            Endi = AttrArray.length;
+                            if (Starti > AttrArray.length) {
+                                PageNumVal = PageNumVal - 1;
+                                $("#PageNum").val(PageNumVal)
+                                Starti = (PageNumVal - 1) * PageSizeVal + 1;
+                            }
+
+                        }
+
+                        //for (var i = 0; i < AttrArray.length; i++) {
+                        for (var i = Starti - 1; i <Endi ; i++) {
+                            Event = Event +
+                              "<tr>" +
+                                    "<td width='550'>" + obj[AttrArray[i]].TD0.Value + "</td>" +
+                                    "<td width='550'>" + obj[AttrArray[i]].TD1.Value + "</td>" +
+                                    "<td width='550'>" + obj[AttrArray[i]].TD2.Value + "</td>" +
+                                    "<td width='550'>" + obj[AttrArray[i]].TD3.Value + "</td>" +
+                                    "<td width='550'>" + obj[AttrArray[i]].TD4.Value + "</td>" +
+                                    "<td width='550'>" + obj[AttrArray[i]].TD5.Value + "</td>" +
+                                    "<td width='550'>" + obj[AttrArray[i]].TD6.Value + "</td>" +
+                                    "<td width='550'>" + obj[AttrArray[i]].TD7.Value + "</td>" +
+                                    "<td width='550'>" + obj[AttrArray[i]].TD8.Value + "</td>" +
+                                    "<td width='550'>" + obj[AttrArray[i]].TD9.Value + "</td>" +
+                                    "<td width='550'>" + obj[AttrArray[i]].TD10.Value + "</td>" +
+                                    "<td width='550'>" + obj[AttrArray[i]].TD11.Value + "</td>" +
+                                    "<td width='550'>" + obj[AttrArray[i]].TD12.Value + "</td>" +
+                                    "<td width='550'>" + obj[AttrArray[i]].TD13.Value + "</td>" +
+                                    "<td width='550'>" + obj[AttrArray[i]].TD14.Value + "</td>" +
+                                    "<td width='550'>" + obj[AttrArray[i]].TD15.Value + "</td>" +
+                                    "<td width='550'>" + obj[AttrArray[i]].TD16.Value + "</td>" +
+                                    "<td width='550'>" + obj[AttrArray[i]].TD17.Value + "</td>" +
+                                    "<td width='550'>" + obj[AttrArray[i]].TD18.Value + "</td>" +
+                                    "<td width='550'>" + obj[AttrArray[i]].TD19.Value + "</td>" +
+                                    "<td width='550'>" + obj[AttrArray[i]].TD20.Value + "</td>" +
+                                    "<td width='550'>" + obj[AttrArray[i]].TD21.Value + "</td>" +
+                                    "<td width='550'>" + obj[AttrArray[i]].TD22.Value + "</td>" +
+                                    "<td width='550'>" + obj[AttrArray[i]].TD23.Value + "</td>" +
+                              "</tr>"
+                        }
+
+
+                        //Json陣列形式的顯示
+                        /*
+                        for (var i = 0; i < obj.length; i++) {
+                            Event = Event +
+                              "<tr>" +
+                                    "<td width='550'>" + obj[i].TD0.Value + "</td>" +
+                                    "<td width='550'>" + obj[i].TD1.Value + "</td>" +
+                                    "<td width='550'>" + obj[i].TD2.Value + "</td>" +
+                                    "<td width='550'>" + obj[i].TD3.Value + "</td>" +
+                                    "<td width='550'>" + obj[i].TD4.Value + "</td>" +
+                                    "<td width='550'>" + obj[i].TD5.Value + "</td>" +
+                                    "<td width='550'>" + obj[i].TD6.Value + "</td>" +
+                                    "<td width='550'>" + obj[i].TD7.Value + "</td>" +
+                                    "<td width='550'>" + obj[i].TD8.Value + "</td>" +
+                                    "<td width='550'>" + obj[i].TD9.Value + "</td>" +
+                                    "<td width='550'>" + obj[i].TD10.Value + "</td>" +
+                                    "<td width='550'>" + obj[i].TD11.Value + "</td>" +
+                                    "<td width='550'>" + obj[i].TD12.Value + "</td>" +
+                                    "<td width='550'>" + obj[i].TD13.Value + "</td>" +
+                                    "<td width='550'>" + obj[i].TD14.Value + "</td>" +
+                                    "<td width='550'>" + obj[i].TD15.Value + "</td>" +
+                                    "<td width='550'>" + obj[i].TD16.Value + "</td>" +
+                                    "<td width='550'>" + obj[i].TD17.Value + "</td>" +
+                                    "<td width='550'>" + obj[i].TD18.Value + "</td>" +
+                                    "<td width='550'>" + obj[i].TD19.Value + "</td>" +
+                                    "<td width='550'>" + obj[i].TD20.Value + "</td>" +
+                                    "<td width='550'>" + obj[i].TD21.Value + "</td>" +
+                                    "<td width='550'>" + obj[i].TD22.Value + "</td>" +
+                                    "<td width='550'>" + obj[i].TD23.Value + "</td>" +
+                              "</tr>"
+                        }
+                        */
+
+                        Event =
+                           "<div id = Event>" +
+                           "<table width='800' border='1'>" +
+                           Event +
+                           "</table>" +
+                           "</div>"
+
+                        $("body").append(Event);
+
+                    },
+                    error: function (data) {
+                        alert('Error');
+                    }
+
+                });
+            });
+            });
+
+</script>
+
+
+<body>
+    檢視類型:
+    <select> 
+        <option>Event Detail View</option>
+        <option>Event Detail View2</option>
+    </select> 
+
+    <input id="Query" type="button" value="查詢" />
+    <input id="Query1" type="button" value="查詢(?參數)"  onclick='location.href = "DBAccess/Event.aspx?DeviceID=27898&BeginDate=2010-12-24 10:00:00&EndDate=2010-12-24 11:00:00&PageSize=20&PageNum=1"' />
+    <input id="Query2" type="button" value="查詢Json字串" />
+
+    <br/>
+    查詢時間區間:
+    <input type="radio" name="TimeInterval" value="1"/>
+    <input  id="BeginDate" type="text"/><input class ="Calendar" type="button" id="BeginCalendar"/>
+    ~
+    <input  id="EndDate" type="text"/><input class ="Calendar" type="button" id="EndCalendar"/>
+     
+    <input type="radio" name="TimeInterval" value="2"/>     
+    <select>
+        <option>Last 3 mins</option>
+        <option>Last week</option>
+        <option>Last month</option> 
+    </select>      
+
+    <hr width = '800' />
+     <table width='800' border='1'>
+        <tr><!--Row-->
+            <td width='550'>服務協定:</td><td width='20'><input type="button" value="..." /></td>
+            <td width='550'>目的IP位址:</td><td width='20'><input type="button" value="..." /></td>
+            <td width='550'>事件關聯狀態:</td><td width='20'><input type="button" value="..." /></td>
+            <td width='550'>主機名稱:</td><td width='20'><input type="button" value="..." /></td>
+            <td width='550'> 事件名稱: </td><td width='20'><input type="button" value="..." /></td>
+        </tr>
+         <tr><!--Row-->
+            <td width='550'>統一事件名稱:</td><td width='20'><input type="button" value="..." /></td>
+            <td width='550'>是否關聯案件:</td><td width='20'><input type="button" value="..." /></td>
+            <td width='550'>偵測器IP位址: </td><td width='20'><input type="button" value="..." /></td>
+            <td width='550'>嚴重性:</td><td width='20'><input type="button" value="..." /></td>
+            <td width='550'>來源IP位址:</td><td width='20'><input type="button" value="..." /></td>
+        </tr>
+    </table>
+
+<input class="Page" id="FirstPage" type="button" value="第一頁" onclick="uf_ChangePage('FirstPage');"/>
+<input class="Page" id="PrePage" type="button" value="上一頁" onclick="uf_ChangePage('PrePage');"/>
+<input class="Page" id="NextPage" type="button" value="下一頁" onclick="uf_ChangePage('NextPage');"/>
+<!--<input class="Page" id="LastPage" type="button" value="最末頁" onclick="uf_ChangePage(LastPage)"/>-->
+頁碼<input id="PageNum" type="text" value="1" width="20"/>
+每頁筆數<input id="PageSize" type="text" value="10"  width="20" />
+
+</body>
+
+</html>

@@ -1,0 +1,51 @@
+﻿<!DOCTYPE html>
+
+<style>
+    #Drigging
+    {
+        width:200px;
+        background:#CCC;
+        border:solid 1px #666;
+        height:80px;
+        line-height:80px;
+        text-align:center;
+        position:absolute;
+    }
+</style>
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+<script type="text/javascript">
+    $(function () {
+        var bool = false;
+        var offsetX = 0;
+        var offsetY = 0;
+        $("#Drigging").mousedown(function () {
+            bool = true;
+            offsetX = event.offsetX;
+            offsetY = event.offsetY;
+            $(this).css('cursor', 'move');
+        })
+        .mouseup(function () {
+            bool = false;
+        })
+        $(document).mousemove(function (e) {
+            if (!bool)
+                return;
+            var x = event.clientX - offsetX;
+            var y = event.clientY - offsetY;
+            $("#Drigging").css("left", x);
+            $("#Drigging").css("top", y);
+
+        })
+    })
+</script>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+</head>
+<body>
+    <div id=Drigging>终于可以拖动啦,其实很简单</div>
+</body>
+</html>

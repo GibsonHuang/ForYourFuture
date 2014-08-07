@@ -1,0 +1,1 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="EventColNameStr.aspx.cs" Inherits="DBAccess_EventColNameStr" %>
