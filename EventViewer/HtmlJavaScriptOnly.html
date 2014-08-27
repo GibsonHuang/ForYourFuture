@@ -1,0 +1,317 @@
+﻿<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+</head>
+    
+<script lang="javascript" type="text/javascript">
+
+    var CalendarStatus = "";//存放現在是 起始 還是 結束 時間
+
+    /*Filter按鈕使用--------------------------------------------------------------------*/
+    //輸入SrcIP用
+    function uf_GetSrcIP() {
+
+        var SrcIP = "";
+        SrcIP = prompt("目前已經輸入的SrcIP為:" + SrcIPStr + "\n" + "底下可繼續加入SrcIP");
+
+        if (SrcIP == "undefined" || SrcIP == null || SrcIP == "") { return; }
+        else if (SrcIP == "Clear") { SrcIPStr = ""; }
+        else if (SrcIP > "" && SrcIPStr > "") {
+            SrcIPStr = SrcIPStr + "||" + SrcIP;
+        }
+        else {
+            SrcIPStr = SrcIP;
+        };
+    }
+
+    //輸入DestIP用
+    function uf_GetDestIP() {
+
+        var DestIP = "";
+        DestIP = prompt("目前已經輸入的DestIP為:" + DestIPStr + "\n" + "底下可繼續加入DestIP");
+
+        if (DestIP == "undefined" || DestIP == null || DestIP == "") { return; }
+        else if (DestIP == "Clear") { DestIPStr = ""; }
+        else if (DestIP > "" && DestIPStr > "") {
+            DestIPStr = DestIPStr + "||" + DestIP;
+        }
+        else {
+            DestIPStr = DestIP;
+        };
+    }
+
+    //輸入EventName用
+    function uf_GetEventName() {
+
+        var EventName = "";
+        EventName = prompt("目前已經輸入的EventName為:" + EventNameStr + "\n" + "底下可繼續加入EventName");
+
+        if (EventName == "undefined" || EventName == null || EventName == "") { return; }
+        else if (EventName == "Clear") { EventNameStr = ""; }
+        else if (EventName > "" && EventNameStr > "") {
+            EventNameStr = EventNameStr + "||" + EventName;
+        }
+        else {
+            EventNameStr = EventName;
+        };
+    }
+
+    /*取得萬年曆------------------------------------------------------------------------------------*/
+    function uf_GetCalendar(obj) {
+
+        CalendarStatus = obj.id;
+        //alert(CalendarStatus);
+
+        var xmlhttp;
+        if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
+            xmlhttp = new XMLHttpRequest();
+        }
+        else {// code for IE6, IE5
+            xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+        }
+
+        xmlhttp.open("Get", "\Calendar.html", false);
+        xmlhttp.send("");
+        //alert(xmlhttp.responseText);
+
+        var data = xmlhttp.responseText;
+
+        var ScriptStart = data.indexOf("<script");
+        var ScriptEnd = data.indexOf("/script>");
+        var dataScript = data.substring(ScriptStart, ScriptEnd)+ "/script>";
+        //var dataScript = data.substring(ScriptStart + 38, ScriptEnd - 2);
+        //alert(dataScript);
+
+        var bodyStart = data.indexOf("<body");
+        var bodyEnd = data.indexOf("/body>");
+        var databody = data.substring(bodyStart, bodyEnd) + "/body>";
+        //var databody = data.substring(bodyStart+39, bodyEnd-2);
+        //alert(databody);
+
+        document.getElementById("Calendar").innerHTML += dataScript + databody;
+        var CalendarScript = document.getElementById("Calendar").querySelector("script");
+        var CalendarScript2 = document.createElement("script");
+        CalendarScript2.innerHTML = CalendarScript.innerHTML;
+        document.getElementById("Calendar").appendChild(CalendarScript2);
+        thisMonth();
+
+    }
+
+    /*將日期存回-----------------------------------------------------------------------------*/
+    function uf_CalendarSaveDate() {
+
+        var Day = document.getElementById("Calendar").querySelector("#dateField").value;
+        var Hour = document.getElementById("Calendar").querySelector("#Hour").value;
+        var Min = document.getElementById("Calendar").querySelector("#Min").value;
+        var Sec = document.getElementById("Calendar").querySelector("#Sec").value;
+        var Date = Day + " " + Hour + ":" + Min + ":" + Sec
+
+        if (CalendarStatus == "BeginCalendar") { document.getElementById("BeginDate").value = Date; }
+        if (CalendarStatus == "EndCalendar") { document.getElementById("EndDate").value = Date; }
+
+        CalendarStatus = "";
+        document.getElementById("Calendar").innerHTML = "";
+
+    }
+
+    function uf_CalendarDelete() {
+
+        document.getElementById("Calendar").innerHTML = "";
+
+    }
+
+    /*取得RowData使用-----------------------------------------------------------------------------*/
+    function uf_EventQuery(PageNum, PageSize) {
+
+        var BeginDateVal;
+        var EndDateVal;
+        var TimeIntervalRadio = document.getElementsByName('TimeInterval');
+        var TimeIntervalRadioCheckedValue;
+        for (var i = 0; i < TimeIntervalRadio.length; i++) {
+            if (TimeIntervalRadio[i].checked) {
+                TimeIntervalRadioCheckedValue = TimeIntervalRadio[i].value;
+            }
+        }
+//        alert(TimeIntervalRadio.length);
+//        alert(TimeIntervalRadioCheckedValue);
+        if (TimeIntervalRadioCheckedValue == 1) {
+            BeginDateVal = document.getElementById('BeginDate').value;
+            EndDateVal = document.getElementById('EndDate').value;
+        }
+        else if (TimeIntervalRadioCheckedValue == 2) {
+            var TimeIntervalOptions = document.getElementById("TimeIntervalOptions").options;
+
+            for (i = 0; i < TimeIntervalOptions.length; i++) {
+                if (TimeIntervalOptions[i].selected) {
+                    //alert(TimeIntervalOptions[i].text);
+                    BeginDateVal = uf_GetTimeIntervalOptionsDate(TimeIntervalOptions[i].text);
+                    EndDateVal = uf_GetNowTime();
+
+                }
+            }
+
+        }
+        
+        alert(BeginDateVal);
+        alert(EndDateVal);
+
+        //實際取得網頁
+        var xmlhttp;
+        if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
+            xmlhttp = new XMLHttpRequest();
+        }
+        else {// code for IE6, IE5
+            xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+        }
+
+        xmlhttp.open("POST", "DBAccess/\EventStringJsonDotNet.aspx", false);
+        xmlhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+        var Params = "DeviceID=27898&BeginDate=" + BeginDateVal.toString() + "&EndDate=" + EndDateVal.toString() + "&PageNum=" + PageNum.toString() + "&PageSize=" + PageSize.toString();
+        //alert(Params);
+        xmlhttp.send(Params);
+        alert(xmlhttp.responseText);
+
+        var EventJsonStr = xmlhttp.responseText;
+
+        var newArr = JSON.parse(EventJsonStr);
+
+        var i = 0;
+        while (newArr.length > i) {
+
+            document.write(newArr[i].RowID + "<br/>");
+            document.write(newArr[i].EventDate + "<br/>");
+            document.write(newArr[i].SrcOrganizationName + "<br/>");	
+            document.write(newArr[i].SrcIPStr + "<br/>");	
+            document.write(newArr[i].SrcPortName + "<br/>");	
+            document.write(newArr[i].EventNormName + "<br/>");	
+            document.write(newArr[i].EventDeviceProductName + "<br/>");	
+            document.write(newArr[i].EventProductName + "<br/>");	
+            document.write(newArr[i].EventKBProductName + "<br/>");	
+            document.write(newArr[i].EventName + "<br/>");	
+            document.write(newArr[i].SensorIPStr + "<br/>");	
+            document.write(newArr[i].SeverityName + "<br/>");	
+            document.write(newArr[i].EventCorrelatedStatusName + "<br/>");	
+            document.write(newArr[i].DestIPStr + "<br/>");	
+            document.write(newArr[i].DestOrganizationName + "<br/>");	
+            document.write(newArr[i].ProtocolName + "<br/>");	
+            document.write(newArr[i].DestPortName + "<br/>");	
+            document.write(newArr[i].SrcUserName + "<br/>");	
+            document.write(newArr[i].DestUserName + "<br/>");	
+            document.write(newArr[i].AlertCount + "<br/>");	
+            document.write(newArr[i].DestSuspiciousIPRangeName + "<br/>");	
+            document.write(newArr[i].EventParamValue + "<br/>");
+            document.write(newArr[i].EventID + "<br/>");
+            document.write(newArr[i].EventPartitionID + "<br/>");    
+            i++;
+        }
+
+    }
+
+    /*換算時間區間為 頭 時間-------------------------------------------------------------------------*/
+    function uf_GetTimeIntervalOptionsDate(option) {
+        var NowSec = new Date().getTime();
+        var d = "";
+
+        switch (option) {
+
+            case "Last 5 mins":
+                d = new Date(NowSec - 300000);
+                break;
+
+            case "Last 1 day":
+                d = new Date(NowSec - 86400000);
+                break;
+
+            case "Last 1 week":
+                d = new Date(NowSec - 86400000*7);
+                break;
+
+            case "Last 1 month":
+                d = new Date(NowSec - 86400000*30);
+                break;
+
+            default:
+                d = new Date(NowSec);
+                break;
+        }
+        
+        var month = d.getMonth() + 1;
+        var day = d.getDate();
+        var hour = d.getHours();
+        var minutes = d.getMinutes();
+        var seconds = d.getSeconds();
+        var New = d.getFullYear() + '-' + uf_GetTen(month) + '-' + uf_GetTen(day) + ' ' + uf_GetTen(hour) + ":" + uf_GetTen(minutes) + ":" + uf_GetTen(seconds);
+        //alert(New);
+        return New;
+    }
+
+    /*取得現在時間-------------------------------------------------------------------------------------*/
+    function uf_GetNowTime() {
+        var d = new Date();
+        var month = d.getMonth() + 1;
+        var day = d.getDate();
+        var hour = d.getHours();
+        var minutes = d.getMinutes();
+        var seconds = d.getSeconds();
+        var Now = d.getFullYear() + '-' + uf_GetTen(month) + '-' + uf_GetTen(day) + ' ' + uf_GetTen(hour) + ":" + uf_GetTen(minutes) + ":" + uf_GetTen(seconds);
+        //alert(Now);
+        return Now;
+    }
+
+    /*兩位數 補足 0 使用*/
+    function uf_GetTen(data) {
+        return (data < 10 ? '0'+data : data);
+    }
+
+</script>
+
+<body>
+    檢視類型:
+    <select> 
+        <option>Event Detail View</option>
+        <option>Event Detail View2</option>
+    </select> 
+
+    <input id="Query2" type="button" value="查詢" onclick='uf_EventQuery(1,10);'/>
+
+    <br/>
+    查詢時間區間:
+    <input type="radio" name="TimeInterval" value="1"/>
+    <input  id="BeginDate" type="text" value="2010-12-24 10:00:00"/><input class ="Calendar" type="button" id="BeginCalendar" onclick="uf_GetCalendar(this)"/>
+    ~
+    <input  id="EndDate" type="text" value="2010-12-24 11:00:00"/><input class ="Calendar" type="button" id="EndCalendar" onclick="uf_GetCalendar(this)"/>
+     
+    <input type="radio" name="TimeInterval" value="2"/>     
+    <select id="TimeIntervalOptions">
+        <option>Last 5 mins</option>
+        <option>Last 1 day</option>
+        <option>Last 1 week</option>
+        <option>Last 1 month</option> 
+    </select>      
+
+    <hr style='width: 100%;' />
+     <table border='1' style='width: 100%;'>
+        <tr><!--Row-->
+            <td style='width: 18%;'>來源IP位址:</td><td><input type="button" style='width: 100%;' value="..." onclick='uf_GetSrcIP();' /></td>
+            <td style='width: 18%;'>目的IP位址:</td><td><input type="button" style='width: 100%;' value="..." onclick='uf_GetDestIP();' /></td>
+            <td style='width: 18%;'>偵測器IP位址:</td><td><input type="button" style='width: 100%;' value="..." onclick='uf_GetSenserIP();'/></td>
+            <td style='width: 18%;'>事件名稱:</td><td><input type="button" style='width: 100%;' value="..." onclick='uf_GetEventName();' /></td>
+            <td style='width: 18%;'>主機名稱:</td><td><input type="button" style='width: 100%;' value="..." /></td>
+        </tr>
+         <tr><!--Row-->
+            <td style='width: 18%;'>統一事件名稱:</td><td><input type="button" style='width: 100%;' value="..." /></td>
+            <td style='width: 18%;'>是否關聯案件:</td><td><input type="button" style='width: 100%;' value="..." /></td>
+            <td style='width: 18%;'>事件關聯狀態: </td><td><input type="button" style='width: 100%;' value="..." /></td>
+            <td style='width: 18%;'></td><td><input type="button" style='width: 100%;' value="..." /></td>
+            <td style='width: 18%;'></td><td><input type="button" style='width: 100%;' value="..." /></td>
+        </tr>
+    </table>
+    <hr style='width: 100%;' />
+</body>
+    <div id="Calendar"></div>
+</html>
+

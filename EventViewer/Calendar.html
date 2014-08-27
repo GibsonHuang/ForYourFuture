@@ -171,7 +171,7 @@
     */
 
     function thisMonth() {
-
+      
         dt = new Date();
         mnth = dt.getMonth(); /* 0-11*/
         dayOfMnth = dt.getDate(); /* 1-31*/
@@ -293,6 +293,7 @@
         fillDates(dayOfWeek + 1, noOfDays);
     }//prevMonth()
 
+ //   alert("Exec Script");
 </script>
 <!-------JavaScript萬年曆 END-------->
 
@@ -322,7 +323,7 @@
 <!-- End of Hidden fields --->
 
 <!--關閉視窗使用-->
-<input id="DeleteCalendar" type="button" style="float: right;" value="X" />
+<input id="DeleteCalendar" type="button" style="float: right;" value="X" onclick="uf_CalendarDelete();" />
 
  <DIV align=center>
   <input type="button" name="prev" onclick="prevMonth()"  value="<<">
@@ -614,7 +615,7 @@
   <td class="auto-style1"> <b>您選擇的日期:</b> </td>
   <td>
   <input id = "dateField" type =text size="12" name=dateField>
-  <input id="Submmit" type="button" value="確定" />
+  <input id="Submmit" type="button" value="確定" onclick='uf_CalendarSaveDate();'/>
  </td>
   </tr>
   </table>

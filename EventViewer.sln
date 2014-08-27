@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "EventViewer", "EventViewer\", "{D0AE1151-9F57-497B-9707-D9ADE6FA345B}"
 	ProjectSection(WebsiteProperties) = preProject
-		TargetFrameworkMoniker = ".NETFramework,Version%3Dv2.0"
+		TargetFrameworkMoniker = ".NETFramework,Version%3Dv3.5"
 		Debug.AspNetCompiler.VirtualPath = "/EventViewer"
 		Debug.AspNetCompiler.PhysicalPath = "EventViewer\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\EventViewer\"
@@ -18,7 +18,7 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "EventViewer", "EventViewer\
 		Release.AspNetCompiler.ForceOverwrite = "true"
 		Release.AspNetCompiler.FixedNames = "false"
 		Release.AspNetCompiler.Debug = "False"
-		VWDPort = "3038"
+		VWDPort = "5003"
 	EndProjectSection
 EndProject
 Global

@@ -5,6 +5,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Data.SqlClient;
 using System.Data;
+using System.Web.Script.Serialization;
 
 public partial class DBAccess_EventString : System.Web.UI.Page
 {
@@ -16,23 +17,22 @@ public partial class DBAccess_EventString : System.Web.UI.Page
         String EndDate = Request.Form["EndDate"];
         String PageSize = Request.Form["PageSize"];
         String PageNum = Request.Form["PageNum"];
-        String SrcIPIncludeList = Request.Form["SrcIPIncludeList"];
-        String DestIPIncludeList = Request.Form["DestIPIncludeList"];
-        String SensorIPIncludeList = Request.Form["SensorIPIncludeList"];
-        String EventNameIncludeList = Request.Form["EventNameIncludeList"];
+        //String SrcIPIncludeList = Request.Form["SrcIPIncludeList"];
+        //String DestIPIncludeList = Request.Form["DestIPIncludeList"];
+        //String SensorIPIncludeList = Request.Form["SensorIPIncludeList"];
+        //String EventNameIncludeList = Request.Form["EventNameIncludeList"];
 
         //String DeviceID = "27898";
         //String BeginDate = "2010-12-24 10:00:00";
         //String EndDate = "2010-12-24 11:00:00";
         //String PageSize = "1000";
         //String PageNum = "1";
-        //String SrcIPIncludeList = "";
-        //String DestIPIncludeList = "";
-        //String SensorIPIncludeList = "";
-        //String EventNameIncludeList = "";
+        String SrcIPIncludeList = "";
+        String DestIPIncludeList = "";
+        String SensorIPIncludeList = "";
+        String EventNameIncludeList = "";
 
-
-        ////透過網址丟參數
+        //透過網址丟參數
         //String DeviceID = Request.QueryString["DeviceID"];
         //String BeginDate = Request.QueryString["BeginDate"];
         //String EndDate = Request.QueryString["EndDate"];
@@ -69,66 +69,23 @@ public partial class DBAccess_EventString : System.Web.UI.Page
                 sqlcmd.Parameters.AddWithValue("@SensorIPIncludeList", SensorIPIncludeList);
                 sqlcmd.Parameters.AddWithValue("@EventNameIncludeList", EventNameIncludeList);
 
+                DataTable dt = new DataTable();
+                SqlDataAdapter da = new SqlDataAdapter(sqlcmd);
+                da.Fill(dt);
 
-                
-                //將Table寫成json格式的字串
-                string EventString="",RowString="";
-                int RID = 1;
-
-//kai的Json格式
-                using (SqlDataReader EventReader = sqlcmd.ExecuteReader())
+                System.Web.Script.Serialization.JavaScriptSerializer serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
+                List<Dictionary<string, object>> rows = new List<Dictionary<string, object>>();
+                Dictionary<string, object> row;
+                foreach (DataRow dr in dt.Rows)
                 {
-                    while(EventReader.Read())
+                    row = new Dictionary<string, object>();
+                    foreach (DataColumn col in dt.Columns)
                     {
-                        RowString = "";
-
-                        for(int i=0;i<EventReader.FieldCount;i++)
-                        {
-                            RowString = RowString + "TD" + i.ToString() + ":{Value:\"" + EventReader.GetValue(i).ToString() + "\"},";
-                        }
-
-                        //EventString = EventString + "R" + RID.ToString() + ":{"+ RowString.Substring(0,RowString.Length-1) +"},"+"</br>" ;
-                        EventString = EventString + "R" + RID.ToString() + ":{" + RowString.Substring(0, RowString.Length - 1) + "},";
-
-                        RID++;
+                        row.Add(col.ColumnName, dr[col]);
                     }
+                    rows.Add(row);
                 }
- 
-                if (RowString=="")
-                {
-                    EventString = "";
-                }
-                else{
-                    EventString = "{" + EventString.Substring(0, EventString.Length - 1) + "}"; 
-                };
-
-                Response.Write(EventString);
-
-                conn.Close();
-
-/*//Json陣列格式              
-                                using (SqlDataReader EventReader = sqlcmd.ExecuteReader())
-                                {
-                                    while (EventReader.Read())
-                                    {
-                                        RowString = "";
-
-                                        for (int i = 0; i < EventReader.FieldCount; i++)
-                                        {
-                                            RowString = RowString + "TD" + i.ToString() + ":{Value:\"" + EventReader.GetValue(i).ToString() + "\"},";
-                                        }
-
-                                        EventString = EventString + "{" + RowString.Substring(0, RowString.Length - 1) + "},";
-
-                                    }
-                                }
-
-                                EventString = "[" + EventString.Substring(0, EventString.Length - 1) + "]";
-
-                                Response.Write(EventString);
-
-                                conn.Close();
-                */
+                Response.Write (serializer.Serialize(rows));
             }
 
             catch (Exception ex)
